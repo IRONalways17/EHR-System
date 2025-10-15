@@ -1,0 +1,14 @@
+# Placeholder for raw data
+# Add your medical imaging data here
+
+# Supported formats:
+# - DICOM (.dcm)
+# - NIfTI (.nii, .nii.gz)
+# - PNG/JPG images
+
+# Organize by modality:
+# - xray/
+# - ct/
+# - mri/
+# - ultrasound/
+# - dxa/

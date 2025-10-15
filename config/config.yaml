@@ -1,0 +1,117 @@
+# AI-Powered EHR System Configuration
+
+# Azure OpenAI Settings
+azure_openai:
+  api_version: "2024-02-15-preview"
+  deployment_names:
+    gpt4: "gpt-4"
+    gpt4_vision: "gpt-4-vision"
+    embedding: "text-embedding-ada-002"
+  max_tokens: 4096
+  temperature: 0.7
+
+# Data Processing
+data_processing:
+  supported_image_formats:
+    - ".dcm"    # DICOM
+    - ".nii"    # NIfTI
+    - ".nii.gz" # Compressed NIfTI
+    - ".png"
+    - ".jpg"
+    - ".jpeg"
+  image_size:
+    default: [512, 512]
+    high_res: [1024, 1024]
+  batch_size: 16
+  num_workers: 4
+
+# Module 1: Data Preprocessing
+preprocessing:
+  normalization:
+    method: "z_score"  # z_score, min_max, or custom
+  augmentation:
+    enabled: true
+    rotation_range: 15
+    zoom_range: 0.1
+    horizontal_flip: true
+    vertical_flip: false
+  validation_split: 0.2
+  test_split: 0.1
+
+# Module 2: Image Enhancement
+image_enhancement:
+  denoising:
+    method: "diffusion"  # diffusion, gan, or traditional
+    noise_threshold: 0.1
+  super_resolution:
+    enabled: true
+    scale_factor: 2
+  contrast_enhancement:
+    enabled: true
+    method: "clahe"  # clahe, histogram_eq, or adaptive
+  modalities:
+    - "xray"
+    - "ct"
+    - "mri"
+    - "ultrasound"
+    - "dxa"
+
+# Module 3: Clinical Documentation
+clinical_documentation:
+  note_generation:
+    template_based: true
+    free_text_synthesis: true
+    include_differential_diagnosis: true
+  icd10_coding:
+    auto_suggest: true
+    confidence_threshold: 0.85
+    max_suggestions: 5
+  supported_note_types:
+    - "progress_note"
+    - "discharge_summary"
+    - "operative_note"
+    - "consultation"
+    - "radiology_report"
+
+# Module 4: Integration & Deployment
+deployment:
+  api:
+    host: "0.0.0.0"
+    port: 8000
+    workers: 4
+    timeout: 300
+  ehr_integration:
+    protocol: "hl7"  # hl7, fhir, or custom
+    enabled: true
+  monitoring:
+    enable_prometheus: true
+    log_level: "INFO"
+    performance_tracking: true
+  
+# Model Configuration
+models:
+  image_enhancement:
+    architecture: "diffusion"
+    checkpoint: "models/image_enhancement/best_model.pth"
+    device: "cuda"  # cuda or cpu
+  clinical_notes:
+    architecture: "transformer"
+    checkpoint: "models/clinical_notes/best_model.pth"
+  icd10_coding:
+    architecture: "bert"
+    checkpoint: "models/icd10_coding/best_model.pth"
+
+# Security & Compliance
+security:
+  encryption_enabled: true
+  anonymization_required: true
+  audit_logging: true
+  hipaa_compliant: true
+  data_retention_days: 2555  # 7 years
+
+# Performance
+performance:
+  enable_caching: true
+  cache_ttl: 3600
+  max_concurrent_requests: 100
+  gpu_memory_fraction: 0.8
