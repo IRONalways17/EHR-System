@@ -1,0 +1,101 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: EHR AI Backend on EC2 with Auto-Deployment
+
+Parameters:
+  KeyName:
+    Type: String
+    Default: ehr-backend-key
+    Description: EC2 Key Pair name
+
+Resources:
+  EhrSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: ehr-backend-sg
+      GroupDescription: Security group for EHR backend
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8000
+          ToPort: 8000
+          CidrIp: 0.0.0.0/0
+
+  EhrBackendInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0c55b159cbfafe1f0
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+        - !Ref EhrSecurityGroup
+      Tags:
+        - Key: Name
+          Value: ehr-backend-server
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -e
+          
+          # Update system
+          yum update -y
+          
+          # Install Python 3.11
+          amazon-linux-extras enable python3.8
+          yum install python3 python3-pip git -y
+          
+          # Clone repository
+          cd /home/ec2-user
+          git clone https://github.com/23f2003700/Infosys-intern-2025.git
+          cd Infosys-intern-2025/ehr-ai-system/backend
+          
+          # Install dependencies
+          pip3 install -r requirements.txt
+          
+          # Create systemd service
+          cat > /etc/systemd/system/ehr-backend.service <<EOF
+          [Unit]
+          Description=EHR AI Backend API
+          After=network.target
+          
+          [Service]
+          Type=simple
+          User=ec2-user
+          WorkingDirectory=/home/ec2-user/Infosys-intern-2025/ehr-ai-system/backend
+          ExecStart=/usr/bin/python3 api_server.py
+          Restart=always
+          
+          [Install]
+          WantedBy=multi-user.target
+          EOF
+          
+          # Start service
+          systemctl daemon-reload
+          systemctl enable ehr-backend
+          systemctl start ehr-backend
+          
+          # Log completion
+          echo "Backend deployed successfully!" > /home/ec2-user/deployment.log
+
+Outputs:
+  PublicIP:
+    Description: Public IP of EC2 instance
+    Value: !GetAtt EhrBackendInstance.PublicIp
+    Export:
+      Name: EhrBackendIP
+  
+  BackendURL:
+    Description: Backend API URL
+    Value: !Sub 'http://${EhrBackendInstance.PublicIp}:8000'
+    Export:
+      Name: EhrBackendURL
+  
+  HealthCheck:
+    Description: Health check endpoint
+    Value: !Sub 'http://${EhrBackendInstance.PublicIp}:8000/health'

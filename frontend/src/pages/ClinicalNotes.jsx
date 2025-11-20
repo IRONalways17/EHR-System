@@ -20,55 +20,50 @@ import { toast } from 'react-toastify'
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import DownloadIcon from '@mui/icons-material/Download'
-import { clinicalNotesService } from '../services/api'
+import DescriptionIcon from '@mui/icons-material/Description'
+import apiService from '../services/api'
 
 export default function ClinicalNotes() {
   const [noteType, setNoteType] = useState('soap')
   const [patientName, setPatientName] = useState('')
   const [patientId, setPatientId] = useState('')
+  const [patientAge, setPatientAge] = useState('')
   const [clinicalFindings, setClinicalFindings] = useState('')
   const [generatedNote, setGeneratedNote] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleGenerate = async () => {
-    if (!patientName || !patientId || !clinicalFindings) {
+    if (!patientName || !patientId || !patientAge || !clinicalFindings) {
       toast.error('Please fill in all required fields')
       return
     }
 
     setLoading(true)
     try {
-      const patientInfo = {
-        patient_id: patientId,
-        name: patientName,
-      }
-
+      // Parse clinical findings - each line is a finding
       const findings = clinicalFindings.split('\n').filter(f => f.trim())
-
-      let result
-      if (noteType === 'soap') {
-        result = await clinicalNotesService.generateSOAPNote(patientInfo, findings)
-      } else if (noteType === 'discharge') {
-        const admissionData = {
-          admission_date: '2025-11-01',
-          discharge_date: '2025-11-12',
-          hospital_course: clinicalFindings,
-          procedures: '',
-          medications: '',
-        }
-        result = await clinicalNotesService.generateDischargeSummary(patientInfo, admissionData)
-      } else if (noteType === 'radiology') {
-        const imageFindings = { findings: clinicalFindings }
-        result = await clinicalNotesService.generateRadiologyReport(imageFindings, 'xray')
+      
+      // Prepare note data matching Lambda function expectations
+      const noteData = {
+        note_type: 'soap',
+        patient_info: {
+          patient_id: patientId,
+          name: patientName,
+          age: parseInt(patientAge) || 45
+        },
+        findings: findings
       }
+
+      const result = await apiService.generateClinicalNote(noteData)
 
       if (result.success) {
-        setGeneratedNote(result.content)
-        toast.success('Clinical note generated successfully!')
+        // Lambda returns 'content' field, not 'data.full_note'
+        setGeneratedNote(result.content || result.data?.full_note || result.data)
+        toast.success('Clinical note generated successfully with Amazon Titan AI!')
       }
     } catch (error) {
       console.error('Generation error:', error)
-      toast.error(`Error: ${error.response?.data?.error || error.message}`)
+      toast.error(`Error: ${error.message || 'Failed to generate note'}`)
     } finally {
       setLoading(false)
     }
@@ -92,15 +87,53 @@ export default function ClinicalNotes() {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
-        Clinical Notes Generation
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
+        <Box
+          sx={{
+            width: 56,
+            height: 56,
+            borderRadius: '16px',
+            background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 8px 24px rgba(17, 153, 142, 0.4)',
+          }}
+        >
+          <DescriptionIcon sx={{ fontSize: 32, color: 'white' }} />
+        </Box>
+        <Box>
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              fontWeight: 800,
+              background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            Clinical Notes Generation
+          </Typography>
+          <Typography variant="body2" color="textSecondary" sx={{ fontWeight: 500 }}>
+            AI-powered medical documentation with Amazon Titan
+          </Typography>
+        </Box>
+      </Box>
 
       <Grid container spacing={3}>
         {/* Input Section */}
         <Grid item xs={12} md={5}>
-          <Card>
-            <CardContent>
+          <Card
+            elevation={0}
+            sx={{
+              borderRadius: '24px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(17, 153, 142, 0.1)',
+              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.08)',
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
                 Patient Information
               </Typography>
@@ -136,6 +169,16 @@ export default function ClinicalNotes() {
 
               <TextField
                 fullWidth
+                label="Patient Age"
+                type="number"
+                value={patientAge}
+                onChange={(e) => setPatientAge(e.target.value)}
+                placeholder="e.g., 45"
+                sx={{ mb: 2 }}
+              />
+
+              <TextField
+                fullWidth
                 multiline
                 rows={12}
                 label={
@@ -161,29 +204,56 @@ export default function ClinicalNotes() {
                 fullWidth
                 variant="contained"
                 size="large"
-                startIcon={loading ? <CircularProgress size={20} /> : <AutoAwesomeIcon />}
+                startIcon={loading ? <CircularProgress size={20} sx={{ color: 'white' }} /> : <AutoAwesomeIcon />}
                 onClick={handleGenerate}
                 disabled={loading}
                 sx={{
-                  background: 'linear-gradient(45deg, #00897b 30%, #26a69a 90%)',
+                  py: 1.5,
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+                  backgroundSize: '200% 200%',
+                  animation: loading ? 'gradient-shift 3s ease infinite' : 'none',
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  boxShadow: '0 8px 24px rgba(17, 153, 142, 0.4)',
+                  transition: 'all 0.3s ease',
                   '&:hover': {
-                    background: 'linear-gradient(45deg, #00796b 30%, #00897b 90%)',
-                  }
+                    background: 'linear-gradient(135deg, #0f8a7e 0%, #30e06d 100%)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 12px 32px rgba(17, 153, 142, 0.5)',
+                  },
+                  '&:disabled': {
+                    background: 'rgba(17, 153, 142, 0.3)',
+                  },
                 }}
               >
-                {loading ? 'Generating...' : 'Generate with AI'}
+                {loading ? '✨ Generating with AI...' : '🚀 Generate with AI'}
               </Button>
 
-              <Box sx={{ mt: 2, p: 2, bgcolor: 'success.lighter', borderRadius: 1 }}>
+              <Box 
+                sx={{ 
+                  mt: 2, 
+                  p: 2.5,
+                  borderRadius: '16px',
+                  background: 'linear-gradient(135deg, rgba(17, 153, 142, 0.1) 0%, rgba(56, 239, 125, 0.1) 100%)',
+                  border: '2px solid rgba(17, 153, 142, 0.2)',
+                  backdropFilter: 'blur(10px)',
+                }}
+              >
                 <Chip
                   icon={<AutoAwesomeIcon />}
                   label="Amazon Titan GenAI (FREE)"
                   size="small"
-                  color="success"
-                  sx={{ mb: 1 }}
+                  sx={{
+                    mb: 1.5,
+                    fontWeight: 700,
+                    background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+                    color: 'white',
+                    border: 'none',
+                  }}
                 />
-                <Typography variant="caption" display="block" color="text.secondary">
-                  Uses Amazon Titan Text Express for professional medical documentation
+                <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                  ✨ Uses Amazon Titan Text Express for professional medical documentation
                 </Typography>
               </Box>
             </CardContent>
@@ -192,11 +262,20 @@ export default function ClinicalNotes() {
 
         {/* Output Section */}
         <Grid item xs={12} md={7}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  Generated Note
+          <Card
+            elevation={0}
+            sx={{
+              borderRadius: '24px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(102, 126, 234, 0.1)',
+              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.08)',
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  📝 Generated Note
                 </Typography>
                 {generatedNote && (
                   <Box sx={{ display: 'flex', gap: 1 }}>
@@ -204,6 +283,15 @@ export default function ClinicalNotes() {
                       size="small"
                       startIcon={<ContentCopyIcon />}
                       onClick={handleCopy}
+                      sx={{
+                        borderRadius: '10px',
+                        fontWeight: 600,
+                        background: 'rgba(102, 126, 234, 0.1)',
+                        color: '#667eea',
+                        '&:hover': {
+                          background: 'rgba(102, 126, 234, 0.2)',
+                        },
+                      }}
                     >
                       Copy
                     </Button>
@@ -212,6 +300,16 @@ export default function ClinicalNotes() {
                       startIcon={<DownloadIcon />}
                       onClick={handleDownload}
                       variant="outlined"
+                      sx={{
+                        borderRadius: '10px',
+                        fontWeight: 600,
+                        borderColor: '#667eea',
+                        color: '#667eea',
+                        '&:hover': {
+                          borderColor: '#764ba2',
+                          background: 'rgba(102, 126, 234, 0.05)',
+                        },
+                      }}
                     >
                       Download
                     </Button>
@@ -224,12 +322,16 @@ export default function ClinicalNotes() {
                 sx={{
                   p: 3,
                   minHeight: 500,
-                  backgroundColor: '#fafafa',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  fontFamily: 'monospace',
+                  borderRadius: '16px',
+                  background: 'linear-gradient(135deg, rgba(248, 249, 250, 0.9) 0%, rgba(241, 243, 245, 0.9) 100%)',
+                  border: '2px solid rgba(102, 126, 234, 0.1)',
+                  fontFamily: '"Courier New", monospace',
+                  fontSize: '0.95rem',
+                  lineHeight: 1.8,
                   whiteSpace: 'pre-wrap',
                   overflowY: 'auto',
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: 'inset 0 2px 8px rgba(0, 0, 0, 0.05)',
                 }}
               >
                 {generatedNote || (

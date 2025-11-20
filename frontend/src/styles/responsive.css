@@ -1,0 +1,150 @@
+/* Mobile Responsive Styles for EHR AI System */
+
+/* Mobile First Approach */
+@media (max-width: 600px) {
+  /* Hide sidebar on mobile by default */
+  .MuiDrawer-root {
+    display: none !important;
+  }
+
+  /* Full width content on mobile */
+  .dashboard-container,
+  .page-container {
+    margin-left: 0 !important;
+    padding: 16px !important;
+  }
+
+  /* Responsive grid */
+  .MuiGrid-container {
+    padding: 0 !important;
+  }
+
+  .MuiGrid-item {
+    padding: 8px !important;
+  }
+
+  /* Stat cards */
+  .stat-card {
+    margin-bottom: 12px !important;
+  }
+
+  /* Typography adjustments */
+  h1 {
+    font-size: 1.75rem !important;
+  }
+
+  h2 {
+    font-size: 1.5rem !important;
+  }
+
+  h3 {
+    font-size: 1.25rem !important;
+  }
+
+  /* Buttons */
+  .MuiButton-root {
+    font-size: 0.875rem !important;
+    padding: 8px 16px !important;
+  }
+
+  /* Cards */
+  .MuiCard-root {
+    margin-bottom: 12px !important;
+  }
+
+  /* Charts */
+  .recharts-wrapper {
+    width: 100% !important;
+    height: 250px !important;
+  }
+
+  /* Tables */
+  .MuiTable-root {
+    font-size: 0.75rem !important;
+  }
+
+  .MuiTableCell-root {
+    padding: 8px 4px !important;
+  }
+
+  /* Upload area */
+  .upload-dropzone {
+    padding: 24px 12px !important;
+  }
+
+  /* Image comparison */
+  .image-comparison-container {
+    flex-direction: column !important;
+  }
+
+  .image-container {
+    width: 100% !important;
+    max-height: 300px !important;
+  }
+}
+
+/* Tablet */
+@media (min-width: 601px) and (max-width: 960px) {
+  .dashboard-container,
+  .page-container {
+    padding: 20px !important;
+  }
+
+  .recharts-wrapper {
+    height: 300px !important;
+  }
+}
+
+/* Touch-friendly buttons on mobile */
+@media (max-width: 600px) {
+  .MuiIconButton-root {
+    padding: 12px !important;
+  }
+
+  .MuiChip-root {
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Navbar mobile adjustments */
+@media (max-width: 600px) {
+  .MuiToolbar-root {
+    min-height: 56px !important;
+    padding: 0 8px !important;
+  }
+
+  .navbar-title {
+    font-size: 1rem !important;
+  }
+
+  .avatar-menu {
+    margin-left: auto !important;
+  }
+}
+
+/* Form inputs mobile */
+@media (max-width: 600px) {
+  .MuiTextField-root,
+  .MuiSelect-root {
+    font-size: 14px !important;
+  }
+
+  .MuiFormControl-root {
+    margin-bottom: 16px !important;
+  }
+}
+
+/* Loading states */
+@media (max-width: 600px) {
+  .loading-container {
+    padding: 40px 20px !important;
+  }
+}
+
+/* Alerts and notifications */
+@media (max-width: 600px) {
+  .MuiAlert-root {
+    font-size: 0.875rem !important;
+    padding: 8px 12px !important;
+  }
+}

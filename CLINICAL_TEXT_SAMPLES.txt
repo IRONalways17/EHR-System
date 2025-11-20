@@ -1,0 +1,116 @@
+==================================================================
+CLINICAL TEXT INPUT SAMPLES FOR ICD-10 CODING AND NOTES
+==================================================================
+
+📋 FOR ICD-10 CODING TEST:
+==================================================================
+
+Sample 1 - Diabetes:
+"Patient presents with elevated blood glucose levels, polyuria, and polydipsia. HbA1c 8.2%. Diagnosed with Type 2 diabetes mellitus without complications."
+
+Sample 2 - Hypertension:
+"Blood pressure consistently elevated at 160/95 mmHg over 3 visits. Essential hypertension diagnosed. No target organ damage noted."
+
+Sample 3 - Pneumonia:
+"Productive cough, fever 102°F, chest X-ray shows right lower lobe consolidation. Diagnosed with community-acquired pneumonia."
+
+Sample 4 - Osteoarthritis:
+"Bilateral knee pain, worse with activity. X-ray shows joint space narrowing and osteophytes. Diagnosis: Osteoarthritis of both knees."
+
+Sample 5 - Acute Bronchitis:
+"Acute onset cough with yellow sputum, no fever. Chest clear. Diagnosed with acute bronchitis."
+
+Sample 6 - GERD:
+"Heartburn after meals, regurgitation. Diagnosed with gastroesophageal reflux disease."
+
+Sample 7 - Migraine:
+"Severe unilateral headache with photophobia and nausea. Migraine without aura."
+
+Sample 8 - Depression:
+"Low mood, anhedonia, poor sleep for 6 weeks. Major depressive disorder diagnosed."
+
+
+📝 FOR CLINICAL NOTES GENERATION:
+==================================================================
+
+SOAP Note Example 1:
+
+SUBJECTIVE:
+35-year-old male complains of persistent lower back pain for 2 weeks. Pain radiates to left leg. Worse with bending and lifting. No trauma history.
+
+OBJECTIVE:
+Vital Signs: BP 128/82, HR 76, Temp 98.6°F
+Physical Exam: Tenderness over L4-L5. Positive straight leg raise on left. Reflexes intact. No motor weakness.
+
+ASSESSMENT:
+Acute lumbar radiculopathy, likely L5 nerve root involvement. Rule out herniated disc.
+
+PLAN:
+1. NSAIDs for pain management
+2. Physical therapy referral
+3. MRI lumbar spine if no improvement in 2 weeks
+4. Activity modification, avoid heavy lifting
+
+
+SOAP Note Example 2:
+
+SUBJECTIVE:
+62-year-old female with progressively worsening shortness of breath on exertion for 3 months. Also notes bilateral ankle swelling. History of hypertension.
+
+OBJECTIVE:
+Vital Signs: BP 145/92, HR 88, RR 20, O2 sat 94% on room air
+Physical Exam: Bilateral lower extremity edema 2+. Crackles at lung bases bilaterally. JVD present.
+
+ASSESSMENT:
+Congestive heart failure, likely systolic dysfunction. Fluid overload evident.
+
+PLAN:
+1. Initiate furosemide 40mg daily
+2. Echo cardiogram ordered
+3. Low sodium diet counseling
+4. Daily weight monitoring
+5. Follow-up in 1 week
+
+
+SOAP Note Example 3:
+
+SUBJECTIVE:
+28-year-old pregnant female at 32 weeks gestation presents for routine prenatal visit. Reports good fetal movement. No contractions or bleeding.
+
+OBJECTIVE:
+Vital Signs: BP 118/75, HR 82, Weight up 2 lbs from last visit
+Fundal height: 32 cm. Fetal heart tones: 145 bpm. Urine protein negative.
+
+ASSESSMENT:
+Intrauterine pregnancy at 32 weeks gestation, appropriate for dates. Maternal-fetal well-being confirmed.
+
+PLAN:
+1. Continue prenatal vitamins
+2. Weekly visits starting at 36 weeks
+3. Glucose tolerance test ordered
+4. Childbirth class recommended
+5. Next visit in 2 weeks
+
+
+==================================================================
+HOW TO USE IN THE APP:
+==================================================================
+
+FOR ICD-10 CODING:
+1. Go to "ICD-10 Coding" page
+2. Paste any diagnosis text above into the search box
+3. Click "Search with AI"
+4. Groq AI will suggest top 5 ICD-10 codes with confidence scores
+
+FOR CLINICAL NOTES:
+1. Go to "Clinical Notes" page
+2. Copy the S, O, A, P sections from examples above
+3. Paste into respective fields
+4. Click "Generate Note with GenAI"
+5. Groq AI will enhance with clinical insights, differential diagnoses, and follow-up recommendations
+
+==================================================================
+AI MODELS USED:
+✅ Primary: Groq Cloud API (Llama 3.1 70B) - FAST & POWERFUL
+⚠️ Backup: AWS Bedrock (if Groq fails)
+==================================================================

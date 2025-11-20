@@ -1,0 +1,134 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Simple EHR AI API with Bedrock Integration
+
+Resources:
+  # Lambda Function for Image Enhancement
+  ImageEnhancementFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ehr-image-enhancement
+      Runtime: python3.11
+      Handler: image_enhancement.lambda_handler
+      CodeUri: ../backend/lambda_functions/
+      Timeout: 30
+      MemorySize: 512
+      Environment:
+        Variables:
+          BEDROCK_MODEL_ID: amazon.titan-text-express-v1
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: '*'
+      Events:
+        EnhanceImage:
+          Type: Api
+          Properties:
+            Path: /api/images/enhance
+            Method: POST
+            RestApiId: !Ref EhrApi
+
+  # Lambda Function for Clinical Notes
+  ClinicalNotesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ehr-clinical-notes
+      Runtime: python3.11
+      Handler: clinical_notes_generator.lambda_handler
+      CodeUri: ../backend/lambda_functions/package/
+      Timeout: 30
+      MemorySize: 512
+      Environment:
+        Variables:
+          BEDROCK_MODEL_ID: amazon.titan-text-express-v1
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: '*'
+      Events:
+        GenerateNote:
+          Type: Api
+          Properties:
+            Path: /api/notes/generate
+            Method: POST
+            RestApiId: !Ref EhrApi
+
+  # Lambda Function for ICD-10 Coding
+  ICD10CodingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ehr-icd10-coding
+      Runtime: python3.11
+      Handler: icd10_coding.lambda_handler
+      CodeUri: ../backend/lambda_functions/
+      Timeout: 30
+      MemorySize: 512
+      Environment:
+        Variables:
+          BEDROCK_MODEL_ID: amazon.titan-text-express-v1
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: '*'
+      Events:
+        SearchICD10:
+          Type: Api
+          Properties:
+            Path: /api/icd10/search
+            Method: POST
+            RestApiId: !Ref EhrApi
+
+  # API Gateway
+  EhrApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization,X-Requested-With'"
+        AllowOrigin: "'*'"
+      DefinitionBody:
+        swagger: '2.0'
+        info:
+          title: EHR AI System API
+          version: '1.0'
+        paths:
+          /api/images/enhance:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ImageEnhancementFunction.Arn}/invocations'
+          /api/notes/generate:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ClinicalNotesFunction.Arn}/invocations'
+          /api/icd10/search:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ICD10CodingFunction.Arn}/invocations'
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${EhrApi}.execute-api.${AWS::Region}.amazonaws.com/prod'
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiUrl'
+  
+  ImageEnhancementFunctionArn:
+    Description: Image Enhancement Lambda Function ARN
+    Value: !GetAtt ImageEnhancementFunction.Arn
+  
+  ClinicalNotesFunctionArn:
+    Description: Clinical Notes Lambda Function ARN
+    Value: !GetAtt ClinicalNotesFunction.Arn

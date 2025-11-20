@@ -20,7 +20,7 @@ import { toast } from 'react-toastify'
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import WarningIcon from '@mui/icons-material/Warning'
-import { icd10Service } from '../services/api'
+import apiService from '../services/api'
 
 export default function ICD10Coding() {
   const [clinicalText, setClinicalText] = useState('')
@@ -35,15 +35,15 @@ export default function ICD10Coding() {
 
     setLoading(true)
     try {
-      const result = await icd10Service.suggestCodes(clinicalText, 5)
+      const result = await apiService.searchICD10Codes(clinicalText)
 
       if (result.success) {
-        setSuggestedCodes(result.suggested_codes)
-        toast.success(`Found ${result.total_suggestions} ICD-10 code suggestions`)
+        setSuggestedCodes(result.suggested_codes || result.data || [])
+        toast.success(`Found ${result.total_suggestions || result.suggested_codes?.length || 0} ICD-10 code suggestions`)
       }
     } catch (error) {
       console.error('Coding error:', error)
-      toast.error(`Error: ${error.response?.data?.error || error.message}`)
+      toast.error(`Error: ${error.message || 'Failed to search ICD-10 codes'}`)
     } finally {
       setLoading(false)
     }
