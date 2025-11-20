@@ -1,0 +1,129 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: EHR AI System - Serverless Backend with API Gateway + Lambda
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.11
+    Environment:
+      Variables:
+        GROQ_API_KEY: your-groq-api-key-here
+
+Resources:
+  # API Gateway
+  EhrApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: ehr-ai-api
+      StageName: prod
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization,X-Requested-With'"
+        AllowOrigin: "'*'"
+
+  # Lambda Layer with dependencies
+  DependenciesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: ehr-dependencies
+      Description: Python dependencies for EHR system
+      ContentUri: ../backend/lambda_functions/package/
+      CompatibleRuntimes:
+        - python3.11
+
+  # Image Enhancement Lambda
+  ImageEnhancementFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ehr-image-enhancement
+      CodeUri: ../backend/lambda_functions/
+      Handler: image_enhancement.lambda_handler
+      Layers:
+        - !Ref DependenciesLayer
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: '*'
+      Events:
+        EnhanceImage:
+          Type: Api
+          Properties:
+            RestApiId: !Ref EhrApi
+            Path: /api/images/enhance
+            Method: POST
+
+  # Clinical Notes Lambda
+  ClinicalNotesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ehr-clinical-notes
+      CodeUri: ../backend/lambda_functions/package/
+      Handler: clinical_notes_generator.lambda_handler
+      Layers:
+        - !Ref DependenciesLayer
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: '*'
+      Events:
+        GenerateNote:
+          Type: Api
+          Properties:
+            RestApiId: !Ref EhrApi
+            Path: /api/notes/generate
+            Method: POST
+
+  # ICD-10 Coding Lambda
+  ICD10Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ehr-icd10-coding
+      CodeUri: ../backend/lambda_functions/
+      Handler: icd10_coding.lambda_handler
+      Layers:
+        - !Ref DependenciesLayer
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: '*'
+      Events:
+        SearchICD10:
+          Type: Api
+          Properties:
+            RestApiId: !Ref EhrApi
+            Path: /api/icd10/search
+            Method: POST
+
+  # Dashboard Lambda
+  DashboardFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ehr-dashboard
+      CodeUri: ../backend/lambda_functions/
+      Handler: dashboard.lambda_handler
+      Events:
+        GetStats:
+          Type: Api
+          Properties:
+            RestApiId: !Ref EhrApi
+            Path: /api/dashboard/stats
+            Method: GET
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${EhrApi}.execute-api.${AWS::Region}.amazonaws.com/prod'
+    Export:
+      Name: EhrApiUrl
+  
+  ApiId:
+    Description: API Gateway ID
+    Value: !Ref EhrApi
